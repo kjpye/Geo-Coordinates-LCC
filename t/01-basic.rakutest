@@ -1,0 +1,6 @@
+use Test;
+use Geo::Coordinates::LCC;
+
+pass "replace me";
+
+done-testing;

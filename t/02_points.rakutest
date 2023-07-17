@@ -1,0 +1,65 @@
+use Test; 
+use Math::Angle;
+
+plan 44;
+
+# BEGIN { @*INC.push('../lib'); }
+
+use Geo::Coordinates::LCC;
+
+sub fleq ($a, $b, Real $eps = 1e-2) {
+    if (abs($a - $b) < $eps) {
+        return True;
+    }
+    return False;
+}
+
+my $data = ' #
+# Worked example from "Map Projections--A Working Manual" by John P. Snyder
+|US|35|-75|1894410.9|1564649.5
+# Vicgrid tests from "VICGRID94 Map Projection": https://www.land.vic.gov.au/__data/assets/pdf_file/0023/494042/VICGRID94MapProjectionInformation.pdf
+# Willah PM 4: AGD66, Vicgrid -34°29′46.7724″, 141°59′14.8833″, 2223143.321, 4773459.258
+|VICGRID|-34.4963256667|141.987467583|2223143.321|4773459.258
+# Cobbobooree PM 14: AGD66, Vicgrid -38°3ʹ59.0913″, 141°24′52.3647″, 2185431.606, 4375727.525
+|VICGRID|-38.06641425|141.41454575|2185431.606|4375727.525
+# Goongerah PM 20: AGD66, Vicgrid -37°23′45.2184, 148°46′38.6881″, 2834353.246, 4449435.092
+|VICGRID|-37.395894|148.777413361|2834353.246|4449435.092
+# Yarrawonga PM 49: AGD66, Vicgrid -36°1′3.6403″, 145°59′53.8910″, 2589988.794, 4608524.140
+|VICGRID|-36.0176778611|145.998303056|2589988.794|4608524.140
+# Frankston PM 396: AGD66, Vicgrid -38°7′52.7666″, 145°9′42.9142″, 2514197.138, 4374434.703
+|VICGRID|-38.1313240556|145.161920611|2514197.138|4374434.703
+# Willah PM 4: GDA94, Vicgrid94 -34°29′41.3773″, 141°59′19.5899″, 2223259.175, 2773628.391
+|VICGRID94|-34.4948270278|141.988774972|2223259.175|2773628.391
+# Cobbobooree PM 14: GDA94, Vicgrid94 -38°3ʹ53.8007″, 141°24′57.2580″, 2185545.806, 2375895.467
+|VICGRID94|-38.0649446389|141.415905|2185545.806|2375895.467
+# Goongerah PM 20: GDA94, Vicgrid94 -37°23′39.6610, 148°46′43.1871″, 2834469.388, 2449602.655
+|VICGRID94|-37.3943502778|148.778663083|2834469.388|2449602.855
+# Yarrawonga PM 49: GDA94, Vicgrid94 -36°0′58.1475″, 145°59′58.4589″, 2590104.617, 2608691.847
+|VICGRID94|-36.0161520833|145.999571917|2590104.617|2608691.847
+# Frankston PM 396: GDA94, Vicgrid94 -38°7′47.3418″, 145°9′47.6172″, 2514197.897, 2374602.216
+|VICGRID94|-38.1298171667|145.163227|2514311.897|2374602.216
+';
+
+for $data.lines -> $line {
+    next if $line ~~ /^\s* '#' /;
+
+    my (Str $ellipsoid, $proj, $la, $lo, $ea, $no) = $line.split('|');
+    my Real $latitude = $la.Real;
+    my Real $longitude = $lo.Real;
+    say Math::Angle.new(deg => $latitude).dms;
+    say Math::Angle.new(deg => $longitude).dms;
+    my Real $easting = $ea.Real;
+    my Real $northing = $no.Real;
+    set-ellipsoid($ellipsoid) if $ellipsoid;
+    set-projection($proj);
+    my (Real $e, Real $n) = |latlon-to-lcc($latitude.Real, $longitude.Real);
+    is-approx $e, $easting,  "easting $e -> $easting";
+    is-approx $n, $northing, "northing $n -> $northing";
+
+    my ($lat, $lon) = |lcc-to-latlon($easting, $northing);
+#    note Math::Angle.new(deg => $lat).dms;
+#    note Math::Angle.new(deg => $lon).dms;
+    is-approx $lon, $longitude, "longitude $longitude -> $lon";
+    is-approx $lat, $latitude,  "latitude $latitude -> $lat";
+}
+
