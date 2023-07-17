@@ -4,10 +4,12 @@
     "Kevin Pye"
   ],
   "build-depends": [
+    "Math::Angle"
   ],
   "depends": [
+    "Geo::Geometry"
   ],
-  "description": "blah blah blah",
+  "description": "Convert between latitude/longitude and Lambert Conformal Conic projections",
   "license": "Artistic-2.0",
   "name": "Geo::Coordinates::LCC",
   "perl": "6.d",

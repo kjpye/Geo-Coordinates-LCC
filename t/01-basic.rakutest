@@ -1,6 +1,16 @@
+use v6;
 use Test;
+
+plan 3;
+
+# use "../lib";
 use Geo::Coordinates::LCC;
 
-pass "replace me";
+ok True, "Module loaded";
 
-done-testing;
+my (Str $zone, Real $east, Real $north);
+
+set-projection('vicgrid94');
+ok ($east,$north)=|latlon-to-lcc(-32.788951667, 145.833055556), "latlon-to-lcc available";
+
+ok lcc-to-latlon($east,$north), "lcc-to-latlon available";
